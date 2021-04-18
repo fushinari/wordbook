@@ -4,7 +4,7 @@
 
 import os
 
-from gi.repository import Gio, Gtk, Handy
+from gi.repository import Gtk, Adw
 
 from wordbook import utils
 from wordbook.settings import Settings
@@ -13,7 +13,7 @@ PATH = os.path.dirname(__file__)
 
 
 @Gtk.Template(resource_path=f"{utils.RES_PATH}/ui/settings_window.ui")
-class SettingsWindow(Handy.PreferencesWindow):
+class SettingsWindow(Adw.PreferencesWindow):
     """Allows the user to customize Wordbook to some extent."""
 
     __gtype_name__ = "SettingsWindow"
@@ -32,15 +32,6 @@ class SettingsWindow(Handy.PreferencesWindow):
 
         self.parent = parent
 
-        # Pronunciations accent choices.
-        liststore = Gio.ListStore.new(Handy.ValueObject)
-        liststore.insert(0, Handy.ValueObject.new("American English"))
-        liststore.insert(1, Handy.ValueObject.new("British English"))
-
-        self._pronunciations_accent_row.bind_name_model(
-            liststore, Handy.ValueObject.dup_string
-        )
-
         self.load_settings()
 
         self._cdef_switch.connect("notify::active", self._on_cdef_switch_activate)
@@ -55,7 +46,7 @@ class SettingsWindow(Handy.PreferencesWindow):
             "notify::active", self._on_dark_font_switch_activate
         )
         self._pronunciations_accent_row.connect(
-            "notify::selected-index", self._on_pronunciations_accent_activate
+            "notify::selected", self._on_pronunciations_accent_activate
         )
 
     def load_settings(self):
@@ -63,7 +54,7 @@ class SettingsWindow(Handy.PreferencesWindow):
         self._cdef_switch.set_active(Settings.get().cdef)
         self._double_click_switch.set_active(Settings.get().double_click)
         self._live_search_switch.set_active(Settings.get().live_search)
-        self._pronunciations_accent_row.set_selected_index(
+        self._pronunciations_accent_row.set_selected(
             Settings.get().pronunciations_accent_value
         )
 
@@ -80,15 +71,16 @@ class SettingsWindow(Handy.PreferencesWindow):
         """Change 'double click to search' state."""
         Settings.get().double_click = switch.get_active()
 
-    def _on_live_search_activate(self, switch, _gparam):
+    @staticmethod
+    def _on_live_search_activate(switch, _gparam):
         """Change live search state."""
-        self.parent.completer.set_popup_completion(not Settings.get().live_search)
+        # self.parent.completer.set_popup_completion(not Settings.get().live_search)
         Settings.get().live_search = switch.get_active()
 
     @staticmethod
     def _on_pronunciations_accent_activate(row, _gparam):
         """Change pronunciations' accent."""
-        Settings.get().pronunciations_accent_value = row.get_selected_index()
+        Settings.get().pronunciations_accent_value = row.get_selected()
 
     @staticmethod
     def _on_dark_ui_switch_activate(switch, _gparam):

@@ -4,12 +4,12 @@
 
 import gi
 
-gi.require_version("Gtk", "3.0")
-gi.require_version("Handy", "1")
-from gi.repository import Gio, GLib, Gtk, Handy  # noqa
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Gio, GLib, Gtk, Adw  # noqa
 
 from wordbook import base, utils  # noqa
-from wordbook.window import WordbookGtkWindow  # noqa
+from wordbook.window import WordbookWindow  # noqa
 from wordbook.settings import Settings  # noqa
 
 
@@ -73,14 +73,14 @@ class Application(Gtk.Application):
             shortcuts_action.connect("activate", window.on_shortcuts)
             self.add_action(shortcuts_action)
 
-            self.add_accelerator("<Primary>s", "app.search-selected", None)
-            self.add_accelerator("<Primary>r", "app.random-word", None)
-            self.add_accelerator("<Primary><Shift>v", "app.paste-search", None)
-            self.add_accelerator("<Primary>comma", "app.preferences", None)
+            self.set_accels_for_action("app.search-selected", ["<Primary>s"])
+            self.set_accels_for_action("app.random-word", ["<Primary>r"])
+            self.set_accels_for_action("app.paste-search", ["<Primary><Shift>v"])
+            self.set_accels_for_action("app.preferences", ["<Primary>comma"])
 
-        self.win = self.props.active_window
+        self.win = self.get_active_window()
         if not self.win:
-            self.win = WordbookGtkWindow(
+            self.win = WordbookWindow(
                 application=self,
                 title="Wordbook",
             )
@@ -110,7 +110,6 @@ class Application(Gtk.Application):
         )
 
         GLib.set_application_name("Wordbook")
-        GLib.set_prgname(utils.APP_ID)
 
-        Handy.init()
+        Adw.init()
         base.fold_gen()
